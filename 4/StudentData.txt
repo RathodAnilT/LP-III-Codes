@@ -1,0 +1,62 @@
+// StudentData
+
+
+// SPDX-License-Identifier: Unlicensed
+pragma solidity ^0.8.0;
+
+contract StudentData {
+    struct Student {
+        uint ID;
+        string fName;
+        string lName;
+        int256 marks;
+    }
+
+    address owner;
+    uint public stdCount = 0;
+    mapping(uint => Student) public stdRecords;
+
+    // Define an event to log each student's data
+    event StudentAdded(uint ID, string fName, string lName, int256 marks);
+
+    modifier onlyOwner {
+        require(owner == msg.sender, "Only owner can perform this action");
+        _;
+    }
+
+    constructor() {
+        owner = msg.sender;
+    }
+
+    // Function to add new student records
+    function addNewRecords(uint _ID, string memory _fName, string memory _lName, int256 _marks) public onlyOwner {
+        stdCount++;
+        stdRecords[stdCount] = Student(_ID, _fName, _lName, _marks);
+    }
+
+    // Function to add bonus marks
+    function bonusMarks(int256 _bonus) public onlyOwner {
+        stdRecords[stdCount].marks += _bonus;
+    }
+
+    // Function to get all student data and emit an event for each student's details
+    function getAllStudents() public returns (uint[] memory, string[] memory, string[] memory, int256[] memory) {
+        uint[] memory ids = new uint[](stdCount);
+        string[] memory firstNames = new string[](stdCount);
+        string[] memory lastNames = new string[](stdCount);
+        int256[] memory marks = new int256[](stdCount);
+
+        for (uint i = 1; i <= stdCount; i++) {
+            Student storage student = stdRecords[i];
+            ids[i - 1] = student.ID;
+            firstNames[i - 1] = student.fName;
+            lastNames[i - 1] = student.lName;
+            marks[i - 1] = student.marks;
+
+            // Emit an event for each student's data
+            emit StudentAdded(student.ID, student.fName, student.lName, student.marks);
+        }
+
+        return (ids, firstNames, lastNames, marks);
+    }
+}

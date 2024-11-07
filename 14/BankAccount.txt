@@ -1,0 +1,56 @@
+//BankAccount:
+
+// SPDX-License-Identifier: Unlicensed
+pragma solidity ^0.8.0;
+
+contract BankAccount {
+    struct Customer {
+        uint ID;
+        string name;
+        uint256 balance;
+    }
+
+    address owner;
+    uint public customerCount = 0;
+    mapping(uint => Customer) public customerRecords;
+
+    // Define an event to log each transaction
+    event Deposit(uint ID, uint256 amount);
+    event Withdrawal(uint ID, uint256 amount);
+
+    modifier onlyOwner {
+        require(owner == msg.sender, "Only owner can perform this action");
+        _;
+    }
+
+    constructor() {
+        owner = msg.sender;
+    }
+
+    // Function to add a new customer
+    function addCustomer(uint _ID, string memory _name) public onlyOwner {
+        customerCount++;
+        customerRecords[customerCount] = Customer(_ID, _name, 0);
+    }
+
+    // Function to deposit money
+    function deposit(uint _ID, uint256 _amount) public onlyOwner {
+        Customer storage customer = customerRecords[_ID];
+        customer.balance += _amount;
+        emit Deposit(_ID, _amount);
+    }
+
+    // Function to withdraw money
+    function withdraw(uint _ID, uint256 _amount) public onlyOwner {
+        Customer storage customer = customerRecords[_ID];
+        require(customer.balance >= _amount, "Insufficient balance");
+        customer.balance -= _amount;
+        emit Withdrawal(_ID, _amount);
+    }
+
+    // Function to show balance
+    function showBalance(uint _ID) public view returns (uint256) {
+        Customer storage customer = customerRecords[_ID];
+        return customer.balance;
+    }
+}
